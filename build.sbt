@@ -101,7 +101,7 @@ lazy val commonSettings = Seq(
     "-Xfuture",
     "-Ywarn-unused-import"
   ),
-  fork in Test := true,
+  fork in Test := false,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   scoverage.ScoverageKeys.coverageMinimum := 100,
   scoverage.ScoverageKeys.coverageFailOnMinimum := false,
