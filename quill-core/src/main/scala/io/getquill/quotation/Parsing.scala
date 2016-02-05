@@ -182,7 +182,7 @@ trait Parsing {
   }
 
   val joinCallParser: Parser[(JoinType, Ast, Ast)] = Parser[(JoinType, Ast, Ast)] {
-    case q"$a.join[$t, $u]($b)" if (is[QuillQuery[Any]](a))  => (InnerJoin, astParser(a), astParser(b))
+    case q"$a.join[$t, $u]($b)" if (is[QuillQuery[Any]](a))      => (InnerJoin, astParser(a), astParser(b))
     case q"$a.leftJoin[$t, $u]($b)" if (is[QuillQuery[Any]](a))  => (LeftJoin, astParser(a), astParser(b))
     case q"$a.rightJoin[$t, $u]($b)" if (is[QuillQuery[Any]](a)) => (RightJoin, astParser(a), astParser(b))
     case q"$a.fullJoin[$t, $u]($b)" if (is[QuillQuery[Any]](a))  => (FullJoin, astParser(a), astParser(b))
@@ -298,22 +298,30 @@ trait Parsing {
       case "%"       => NumericOperator.`%`
     }
 
-  val setOperationParser: Parser[Operation] =
-    operationParser(is[io.getquill.Query[Any]](_)) {
-      case "isEmpty"  => SetOperator.`isEmpty`
-      case "nonEmpty" => SetOperator.`nonEmpty`
+  val setOperationParser: Parser[Operation] = {
+    val unaryParser =
+      operationParser(v => is[io.getquill.Query[Any]](v)) {
+        case "isEmpty"  => SetOperator.`isEmpty`
+        case "nonEmpty" => SetOperator.`nonEmpty`
+      }
+    Parser[Operation] {
+      case `unaryParser`(o) => o
+      case q"$a.contains[..$t]($b)" if (is[io.getquill.Query[Any]](a) || is[collection.Set[Any]](a)) =>
+        BinaryOperation(astParser(a), SetOperator.`contains`, astParser(b))
     }
+  }
 
   private def isNumeric[T: WeakTypeTag] =
     c.inferImplicitValue(c.weakTypeOf[Numeric[T]]) != EmptyTree
 
   private def is[T](tree: Tree)(implicit t: TypeTag[T]) =
-    tree.tpe <:< t.tpe
+    tree.tpe.erasure <:< t.tpe.erasure
 
   val valueParser: Parser[Value] = Parser[Value] {
     case q"null"                         => NullValue
     case Literal(c.universe.Constant(v)) => Constant(v)
     case q"((..$v))" if (v.size > 1)     => Tuple(v.map(astParser(_)))
+    case q"$pack.Set.apply[$t](..$v)"    => Set(v.map(astParser(_)))
   }
 
   val actionParser: Parser[Ast] = Parser[Ast] {

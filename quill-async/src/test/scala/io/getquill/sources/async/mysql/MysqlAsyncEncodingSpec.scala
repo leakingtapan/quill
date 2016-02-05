@@ -61,6 +61,7 @@ class MysqlAsyncEncodingSpec extends EncodingSpec {
     "decode and encode any numeric as boolean" in {
       case class EncodingTestEntity(v3: Boolean, v4: Boolean, v6: Boolean, v7: Boolean)
       Await.result(testMysqlDB.run(query[EncodingTestEntity]), Duration.Inf)
+      ()
     }
   }
 
@@ -75,6 +76,7 @@ class MysqlAsyncEncodingSpec extends EncodingSpec {
       result <- testMysqlDB.run(query[DateEncodingTestEntity])
     } yield result
     Await.result(r, Duration.Inf)
+    ()
   }
 
   "fails if the column has the wrong type" - {
