@@ -9,6 +9,10 @@ trait Decoder[R, T] {
 }
 
 trait Encoder[S, T] {
+  
+  def raw(index: Int, value: T, row: S): (S, Int) =
+    (apply(index, value, row), index + 1)
+    
   def apply(index: Int, value: T, row: S): S
 }
 

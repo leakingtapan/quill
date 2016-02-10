@@ -49,16 +49,20 @@ class MirrorSource(config: SourceConfig[MirrorSource])
   def execute(ast: Ast) =
     ActionMirror(ast)
 
-  case class BatchActionMirror(ast: Ast, bindList: List[Row])
+  case class BatchActionMirror(ast: Ast, bindList: List[Row], indexes: List[List[Int]])
 
-  def execute[T](ast: Ast, bindParams: T => Row => Row) =
-    (values: List[T]) =>
-      BatchActionMirror(ast, values.map(bindParams).map(_(Row())))
+  def execute[T](ast: Ast, bindParams: T => Row => (Row, List[Int])) =
+    (values: List[T]) => {
+      val bindings = values.map(bindParams).map(_(Row()))
+      BatchActionMirror(ast, bindings.map(_._1), bindings.map(_._2))
+    }
 
-  case class QueryMirror[T](ast: Ast, binds: Row, extractor: Row => T)
+  case class QueryMirror[T](ast: Ast, binds: Row, indexes: List[Int], extractor: Row => T)
 
-  def query[T](ast: Ast, bind: Row => Row, extractor: Row => T) =
-    QueryMirror(ast, bind(Row()), extractor)
+  def query[T](ast: Ast, bind: Row => (Row, List[Int]), extractor: Row => T) = {
+    val (row, indexes) = bind(Row())
+    QueryMirror(ast, row, indexes, extractor)
+  }
 }
 
 class MirrorSourceMacro(val c: Context) extends SourceMacro {

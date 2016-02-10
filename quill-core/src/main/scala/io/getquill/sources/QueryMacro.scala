@@ -29,7 +29,7 @@ trait QueryMacro extends SelectFlattening with SelectResultExtraction {
       q"""
         ${c.prefix}.query(
             ${prepare(flattenQuery, params.map(_._1))}._1,
-            identity,
+            ((row: $s) => (row, List[Int]())),
             $extractor)
       """
     else

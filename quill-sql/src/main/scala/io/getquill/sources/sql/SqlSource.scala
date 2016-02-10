@@ -68,7 +68,7 @@ abstract class SqlSource[D <: SqlIdiom, N <: NamingStrategy, R: ClassTag, S: Cla
     quoted: Quoted[(P1, P2, P3, P4, P5, P6, P7, P8, P9) => Query[T]]): (P1, P2, P3, P4, P5, P6, P7, P8, P9) => QueryResult[T] = macro SqlSourceMacro.run[R, S]
   def run[P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, T](
     quoted: Quoted[(P1, P2, P3, P4, P5, P6, P7, P8, P9, P10) => Query[T]]): (P1, P2, P3, P4, P5, P6, P7, P8, P9, P10) => QueryResult[T] = macro SqlSourceMacro.run[R, S]
-  
+
   def run[T](
     quoted: Quoted[Action[T]]): ActionResult[T] = macro SqlSourceMacro.run[R, S]
   def run[P1, T](
@@ -91,7 +91,7 @@ abstract class SqlSource[D <: SqlIdiom, N <: NamingStrategy, R: ClassTag, S: Cla
     quoted: Quoted[(P1, P2, P3, P4, P5, P6, P7, P8, P9) => Action[T]]): List[(P1, P2, P3, P4, P5, P6, P7, P8, P9)] => BatchedActionResult[T] = macro SqlSourceMacro.run[R, S]
   def run[P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, T](
     quoted: Quoted[(P1, P2, P3, P4, P5, P6, P7, P8, P9, P10) => Action[T]]): List[(P1, P2, P3, P4, P5, P6, P7, P8, P9, P10)] => BatchedActionResult[T] = macro SqlSourceMacro.run[R, S]
-  
+
   def run[T](
     quoted: Quoted[T]): QueryResult[T] = macro SqlSourceMacro.run[R, S]
   def run[P1, T](

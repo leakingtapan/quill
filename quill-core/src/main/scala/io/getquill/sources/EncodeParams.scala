@@ -22,17 +22,18 @@ object EncodeParams {
     import c.universe._
     val encoders =
       for ((ident, (encoder, tree)) <- params) yield {
-        q"${ident.name} -> ((row: $s, index: Int) => $encoder(index, $tree, row))"
+        q"${ident.name} -> ((row: $s, index: Int) => $encoder.raw(index, $tree, row))"
       }
     q"""
     {
       val bindingMap = collection.Map(..$encoders)
       (bindings: List[String]) =>
         (row: $s) =>
-          bindings.foldLeft((row, 0)) {
-            case ((row, index), binding) =>
-              (bindingMap(binding)(row, index), index + 1)
-          }._1
+          bindings.foldLeft((row, List(0))) {
+            case ((row, indexes), binding) =>
+              val (r: $s, i: Int) = bindingMap(binding)(row, indexes.last)
+              (r, indexes :+ i)
+          }
     }
     """
   }
